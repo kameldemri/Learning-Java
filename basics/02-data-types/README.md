@@ -23,11 +23,52 @@ Java has **8 primitive data types**:
 #### Notes:
 - The range for numeric types is calculated using the formula:  
   `[-2^(n-1) ; 2^(n-1) - 1]`  
-  where **n** is the size of the type in bytes.
-  
+  where **n** is the size of the type in bits.
 
+---
 
-### Characters
+## Characters
+Characters in Java are encoded using **UTF-16** (size = 16 bits = 2 bytes)
+It supports both **ASCII values** and **full Unicode** characters.
 
-- `char` data type must be surrounded by single quotes. We can assing ASCII values to a `char`.
-- `String` data type must be surrounded by double quotes.
+> Java `char` represents **one UTF-16 code unit**, not necessarily one full Unicode character
+> Java `String` internally stores text as a **sequence of UTF-16 code units**
+
+---
+
+### Surrogate
+
+The mechanism used in Java (and UTF-16 in general) to represent **Unicode code points greater than `U+FFFF`** (`> 65,535`).
+UTF-16 can directly represent characters in the range `U+0000` → `U+FFFF` (the **Basic Multilingual Plane**).
+To represent characters above that range, UTF-16 uses **two 16-bit `char` values** - called a **surrogate pair**:
+
+* **High surrogate:** `0xD800–0xDBFF`
+* **Low surrogate:** `0xDC00–0xDFFF`
+
+Together they represent a single code point in the range `U+10000–U+10FFFF`.
+
+---
+
+### Misleading Length
+
+```java
+String s = "😀";
+int len = s.length();                // 2 (UTF-16 code units)
+int real = s.codePointCount(0, s.length()); // 1 (actual Unicode character)
+```
+
+`String.length()` counts **UTF-16 code units**, not Unicode characters.
+That’s why `"😀"`, which is one Unicode code point, reports a length of 2 — it’s stored as **two surrogate `char`s**.
+
+> `1 char` ≠ `1 character`
+
+---
+
+### Notes
+
+* `char` literals use **single quotes**, e.g. `'A'`, `'中'`
+* `String` literals use **double quotes**, e.g. `"Hello"`
+* You can assign numeric values to `char` (ASCII or Unicode code unit):
+  ```java
+  char c = 65; // 'A'
+* Use `codePointAt()` and `codePoints()` to safely handle full Unicode characters.
